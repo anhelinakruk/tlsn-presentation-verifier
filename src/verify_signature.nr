@@ -1,11 +1,9 @@
 use dep::std;
-use sha256::sha256_var;
 
 pub fn verify_signature<let N: u32>(
     key: [u8; 64],
-    message: [u8; N],
+    message_hash: [u8; N],
     signature: [u8; 64],
-    message_len: u64,
 ) -> bool {
     let mut pub_key_x: [u8; 32] = [0; 32];
     let mut pub_key_y: [u8; 32] = [0; 32];
@@ -15,14 +13,10 @@ pub fn verify_signature<let N: u32>(
         pub_key_y[i] = key[i + 32];
     }
 
-    let message_hash = sha256_var(message, message_len);
-
     let is_valid =
         std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, message_hash);
 
-    assert(is_valid);
-
-    true
+    is_valid
 }
 
 #[test]
@@ -44,8 +38,7 @@ fn test_verify() {
         180, 153, 180, 248, 149, 39, 9, 131, 64, 49, 134, 217, 145, 152, 133, 207, 252, 231, 242,
         116, 125, 112, 191,
     ];
-    let message_len = 54;
 
-    let result = verify_signature(key, message, signature, message_len);
+    let result = verify_signature(key, message, signature);
     assert(result);
 }
