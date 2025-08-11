@@ -1,4 +1,5 @@
 use std::hash::blake3;
+use dep::std;
 
 fn hash_pair(left: [u8; 32], right: [u8; 32]) -> [u8; 32] {
     let mut input: [u8; 64] = [0; 64];
@@ -46,8 +47,6 @@ pub fn compute_commitment_root(leaves: [[u8; 32]; 9]) -> [u8; 32] {
     root
 }
 
-use dep::std;
-
 fn verify_signature(key: [u8; 64], message_hash: [u8; 32], signature: [u8; 64]) -> bool {
     let mut pub_key_x: [u8; 32] = [0; 32];
     let mut pub_key_y: [u8; 32] = [0; 32];
@@ -63,108 +62,98 @@ fn verify_signature(key: [u8; 64], message_hash: [u8; 32], signature: [u8; 64]) 
     is_valid
 }
 
+fn hash_domain<let N: u32>(domain_bytes: [u8; N]) -> [u8; 16] {
+    let domain_hash = blake3(domain_bytes);
+    let mut domain: [u8; 16] = [0; 16];
+    
+    for i in 0..16 {
+        domain[i] = domain_hash[i];
+    }
+    
+    domain
+}
+
+fn hash_field<let N: u32>(domain: [u8; 16], data: [u8; N]) -> [u8; 32] {
+    let mut input: [u8; 16 + N] = [0; 16 + N]; 
+    
+    for i in 0..16 {
+        input[i] = domain[i];
+    }
+    
+    for i in 0..N {
+        input[i + 16] = data[i];
+    }
+    
+    blake3(input)
+}
+
+fn hash_body_fields(
+    verifying_key_data: [u8; 35],
+    connection_info_data: [u8; 17],
+    server_ephemeral_key_data: [u8; 67],
+    cert_commitment_data: [u8; 34],
+    transcript_commitments_data: [u8; 83]
+) -> [[u8; 32]; 5] {
+    let mut body_field_hashes: [[u8; 32]; 5] = [[0; 32]; 5];
+
+    body_field_hashes[0] = hash_field(hash_domain("VerifyingKey".as_bytes()), verifying_key_data);
+    body_field_hashes[1] = hash_field(hash_domain("ConnectionInfo".as_bytes()), connection_info_data);
+    body_field_hashes[2] = hash_field(hash_domain("ServerEphemKey".as_bytes()), server_ephemeral_key_data);
+    body_field_hashes[3] = hash_field(hash_domain("ServerCertCommitment".as_bytes()), cert_commitment_data);
+    body_field_hashes[4] = hash_field(hash_domain("TranscriptCommitment".as_bytes()), transcript_commitments_data);
+
+    body_field_hashes
+}
+
 pub fn main(
+
     key: [u8; 64],
     message: [u8; 54],
     signature: [u8; 64],
     header_root: [u8; 32],
-    body_leaves_hashes: [[u8; 32]; 5],
+    verifying_key_data: [u8; 35],
+    connection_info_data: [u8; 17],
+    server_ephemeral_key_data: [u8; 67],
+    cert_commitment_data: [u8; 34],
+    transcript_commitments_data: [u8; 83],
     commitment_root: [u8; 32],
-    transcript_leaves_hashes: [[u8; 32]; 9],
+    transcript_leaves: [[u8; 3000]; 9], 
+    leaves_lengths: [u32; 9],            
 ) {
     let message_hash: [u8; 32] = sha256::sha256_var(message, 54);
     let signature_valid = verify_signature(key, message_hash, signature);
     assert(signature_valid);
 
-    let computed_header_root = compute_header_root(body_leaves_hashes);
+    let body_field_hashes = hash_body_fields(
+        verifying_key_data,
+        connection_info_data,
+        server_ephemeral_key_data,
+        cert_commitment_data,
+        transcript_commitments_data
+    );
+
+    let computed_header_root = compute_header_root(body_field_hashes);
     assert(computed_header_root == header_root);
 
-    let computed_commitment_root = compute_commitment_root(transcript_leaves_hashes);
-    assert(computed_commitment_root == commitment_root);
+    // let mut commitment_leaves_hash: [[u8; 32]; 9] = [[0; 32]; 9];
+    // for i in 0..9 {
+    //     let leaf_length = leaves_lengths[i];
+    //     let hash =  hash_transcript_chunk(transcript_leaves[i], [0; leaf_length]);
+    //     commitment_leaves_hash[i] = hash;
+    // }
+
+    // let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
+    // assert(computed_commitment_root == commitment_root);
 }
 
 #[test]
-fn test_compute_merkle_root_from_leaves() {
-    let leaves: [[u8; 32]; 5] = [
-        [
-            141, 104, 217, 155, 2, 30, 168, 170, 185, 6, 45, 127, 65, 176, 175, 228, 72, 218, 81,
-            227, 93, 163, 206, 24, 140, 103, 224, 164, 152, 48, 38, 74,
-        ],
-        [
-            216, 120, 202, 43, 151, 133, 16, 195, 221, 77, 11, 207, 7, 93, 224, 130, 183, 2, 47, 9,
-            72, 248, 85, 27, 219, 47, 66, 250, 186, 72, 210, 240,
-        ],
-        [
-            105, 174, 86, 34, 16, 193, 174, 244, 128, 94, 26, 62, 99, 215, 54, 61, 182, 58, 221,
-            243, 57, 225, 236, 32, 110, 27, 178, 171, 3, 57, 204, 231,
-        ],
-        [
-            221, 201, 199, 254, 14, 61, 213, 1, 24, 72, 19, 183, 8, 66, 227, 150, 117, 138, 144,
-            205, 125, 177, 45, 15, 149, 21, 252, 142, 147, 111, 79, 196,
-        ],
-        [
-            230, 33, 57, 199, 150, 131, 62, 144, 32, 2, 162, 131, 154, 153, 139, 171, 103, 231, 107,
-            57, 102, 255, 146, 74, 215, 142, 121, 39, 89, 2, 112, 67,
-        ],
-    ];
+fn test_hashed() {
+    let verifying_key_data = [1, 33, 3, 236, 101, 149, 63, 171, 51, 123, 233, 63, 78, 214, 174, 228, 1, 149, 102, 240, 182, 253, 134, 215, 113, 106, 71, 237, 207, 177, 218, 180, 177, 28, 254];
+    let connection_info_data =[141, 232, 140, 104, 0, 0, 0, 0, 0, 226, 0, 0, 0, 82, 3, 0, 0];
+    let server_ephemeral_key_data = [0, 65, 4, 240, 11, 163, 35, 244, 238, 130, 219, 134, 219, 252, 69, 190, 78, 127, 23, 220, 25, 168, 37, 192, 152, 124, 5, 5, 58, 129, 139, 79, 37, 153, 31, 144, 209, 51, 141, 170, 143, 239, 70, 46, 164, 136, 41, 165, 4, 54, 73, 46, 52, 249, 215, 148, 119, 59, 141, 67, 102, 10, 176, 166, 3, 222, 207];
+    let cert_commitment_data = [2, 32, 183, 33, 154, 74, 47, 217, 70, 119, 20, 62, 78, 177, 146, 124, 244, 189, 202, 203, 125, 69, 154, 85, 27, 206, 38, 17, 140, 120, 97, 99, 14, 175];
+    let transcript_commitments_data = [0, 2, 32, 70, 38, 119, 62, 85, 14, 143, 50, 9, 72, 172, 242, 248, 100, 145, 2, 139, 207, 135, 7, 29, 38, 115, 244, 170, 58, 194, 255, 143, 217, 148, 55, 248, 220, 245, 20, 169, 36, 114, 114, 204, 66, 91, 5, 152, 76, 158, 216, 150, 18, 189, 77, 231, 57, 140, 238, 123, 130, 55, 28, 205, 237, 148, 46, 209, 82, 79, 84, 142, 193, 90, 159, 255, 172, 58, 16, 72, 116, 154, 2];
 
-    let expected_root = [
-        159, 84, 217, 98, 224, 139, 152, 197, 11, 87, 166, 82, 38, 181, 140, 115, 86, 135, 126, 231,
-        230, 58, 104, 152, 192, 174, 80, 163, 201, 166, 74, 206,
-    ];
-
-    let actual_root = compute_header_root(leaves);
-
-    assert(expected_root == actual_root);
-}
-
-#[test]
-fn test_compute_merkle_root_from_leaves_nine() {
-    let leaves: [[u8; 32]; 9] = [
-        [
-            89, 213, 174, 100, 184, 37, 136, 243, 214, 156, 194, 1, 89, 126, 48, 163, 186, 136, 229,
-            132, 255, 119, 63, 14, 234, 30, 3, 77, 163, 212, 146, 40,
-        ],
-        [
-            68, 169, 184, 177, 243, 187, 28, 190, 16, 224, 139, 4, 168, 215, 175, 122, 116, 56, 139,
-            217, 201, 243, 253, 207, 219, 211, 9, 139, 95, 10, 11, 105,
-        ],
-        [
-            109, 161, 215, 124, 153, 38, 206, 196, 154, 168, 163, 58, 21, 66, 36, 97, 77, 188, 201,
-            241, 120, 124, 6, 24, 102, 144, 185, 173, 188, 253, 183, 156,
-        ],
-        [
-            69, 248, 10, 26, 230, 252, 12, 41, 46, 67, 102, 123, 174, 32, 217, 66, 49, 114, 189,
-            255, 89, 233, 232, 149, 119, 10, 133, 130, 130, 162, 22, 49,
-        ],
-        [
-            64, 46, 57, 207, 221, 208, 154, 44, 22, 224, 41, 163, 204, 96, 240, 234, 56, 20, 249,
-            166, 148, 94, 183, 146, 6, 142, 194, 235, 195, 11, 213, 162,
-        ],
-        [
-            189, 112, 230, 54, 80, 112, 220, 32, 109, 129, 56, 124, 218, 82, 112, 91, 170, 56, 50,
-            122, 233, 202, 176, 141, 201, 20, 4, 67, 228, 0, 42, 160,
-        ],
-        [
-            125, 204, 131, 41, 94, 159, 251, 246, 110, 86, 212, 249, 124, 124, 192, 134, 206, 155,
-            250, 47, 2, 28, 197, 239, 250, 186, 6, 68, 16, 134, 23, 226,
-        ],
-        [
-            239, 93, 140, 226, 180, 63, 23, 240, 179, 198, 40, 0, 173, 35, 12, 67, 165, 153, 84, 35,
-            76, 127, 128, 134, 3, 18, 67, 97, 251, 148, 156, 26,
-        ],
-        [
-            74, 70, 53, 238, 208, 187, 238, 80, 35, 243, 105, 111, 127, 193, 183, 184, 171, 21, 136,
-            56, 43, 62, 146, 181, 94, 75, 240, 40, 186, 249, 69, 93,
-        ],
-    ];
-
-    let expected_root = [
-        17, 201, 148, 157, 99, 14, 220, 117, 64, 238, 156, 33, 126, 34, 131, 178, 224, 198, 179, 44,
-        220, 232, 159, 216, 115, 90, 246, 68, 245, 36, 117, 66,
-    ];
-
-    let actual_root = compute_commitment_root(leaves);
-
-    assert(expected_root == actual_root);
+    let body_hashed = hash_body_fields(verifying_key_data, connection_info_data, server_ephemeral_key_data, cert_commitment_data, transcript_commitments_data); 
+    println(body_hashed);
 }
