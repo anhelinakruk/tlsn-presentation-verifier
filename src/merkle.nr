@@ -2,11 +2,10 @@ use super::hash::hash_pair;
 use chacha_encoder::chacha_encoder::{encode_data_generic_byte, EncoderSecret};
 use std::hash::blake3;
 
-pub fn compute_commitment_root(leaves: [[u8; 32]; 4]) -> [u8; 32] {
+pub fn compute_commitment_root(leaves: [[u8; 32]; 3]) -> [u8; 32] {
     // Level 1
     let h0 = hash_pair(leaves[0], leaves[1]);
-    let h1 = hash_pair(leaves[2], leaves[3]);
-    
+    let h1 = leaves[2];
     // Root
     let root = hash_pair(h0, h1);
 
