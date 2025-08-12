@@ -1,0 +1,15 @@
+[package]
+name = "circuit-generator"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "generate_circuits"
+path = "generate_circuits.rs"
+
+[[bin]]
+name = "build_circuit"
+path = "build_circuit.rs"
+
+[dependencies]
+regex = "1.0"
