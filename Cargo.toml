@@ -13,3 +13,4 @@ path = "build_circuit.rs"
 
 [dependencies]
 regex = "1.0"
+noir = { git = "https://github.com/zkmopro/noir-rs", features = ["barretenberg", "srs-downloader"] }

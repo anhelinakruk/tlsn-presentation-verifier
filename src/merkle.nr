@@ -1,5 +1,5 @@
 use super::hash::hash_pair;
-use chacha_encoder::chacha_encoder::{encode_data_generic_byte, EncoderSecret};
+use chacha_encoder::chacha_encoder::{add_sixteen_elements, encode_data_generic_byte, EncoderSecret};
 use std::hash::blake3;
 
 pub fn compute_commitment_root(leaves: [[u8; 32]; 4]) -> [u8; 32] {
@@ -36,25 +36,4 @@ pub fn encode_and_hash<let N: u32>(encoder_secret: EncoderSecret, data: [u8; N],
 
     let hash = blake3(encoded_with_blinder);
     hash
-}
-
-pub fn add_sixteen_elements<let INPUT_SIZE: u32>(
-    input: [u8; INPUT_SIZE],
-    additional_elements: [u8; 16],
-) -> [u8; INPUT_SIZE + 16] {
-    // Verify that OUTPUT_SIZE = INPUT_SIZE + 16
-
-    let mut result = [0; INPUT_SIZE + 16];
-
-    // Copy original data
-    for i in 0..INPUT_SIZE {
-        result[i] = input[i];
-    }
-
-    // Add the 16 additional elements at the end
-    for i in 0..16 {
-        result[INPUT_SIZE + i] = additional_elements[i];
-    }
-
-    result
 }
