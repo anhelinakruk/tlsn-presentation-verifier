@@ -7,7 +7,7 @@ pub mod hash;
 pub mod merkle;
 pub mod signature;
 
-pub fn main(
+fn main(
     key: [u8; 64],
     message: [u8; 54],
     signature: [u8; 64],
@@ -18,9 +18,10 @@ pub fn main(
     cert_commitment_data: [u8; 34],
     transcript_commitments_data: [u8; 83],
     commitment_root: [u8; 32],
-    transcript_mins: TranscriptOpeningMins,
-    transcript_close_time: TranscriptOpeningCloseTime,
-    transcript_price: TranscriptOpeningPrice,
+    transcript_mins: pub TranscriptOpeningMins,
+    transcript_close_time: pub TranscriptOpeningCloseTime,
+    transcript_price: pub TranscriptOpeningPrice,
+    transcript_symbol: pub TranscriptOpeningSymbol,
     encoder_secret: EncoderSecret,
 ) {
     let message_hash: [u8; 32] = sha256::sha256_var(message, 54);
@@ -38,7 +39,7 @@ pub fn main(
     let computed_header_root = compute_header_root(body_field_hashes);
     assert(computed_header_root == header_root);
 
-    let mut commitment_leaves_hash: [[u8; 32]; 3] = [[0; 32]; 3];
+    let mut commitment_leaves_hash: [[u8; 32]; 4] = [[0; 32]; 4];
 
     commitment_leaves_hash[0] = encode_and_hash(
         encoder_secret,
@@ -65,15 +66,17 @@ pub fn main(
     );
     println(commitment_leaves_hash[2]);
 
+    commitment_leaves_hash[3] = encode_and_hash(
+        encoder_secret,
+        transcript_symbol.data,
+        transcript_symbol.direction,
+        transcript_symbol.position,
+        transcript_symbol.blinders,
+    );
+    println(commitment_leaves_hash[3]);
+
     let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
     assert(computed_commitment_root == commitment_root);
-}
-
-pub struct TranscriptOpeningPrice {
-    direction: u8,
-    data: [u8; 20],
-    blinders: [u8; 16],
-    position: u32,
 }
 
 pub struct TranscriptOpeningMins {
@@ -86,6 +89,20 @@ pub struct TranscriptOpeningMins {
 pub struct TranscriptOpeningCloseTime {
     direction: u8,
     data: [u8; 25],
+    blinders: [u8; 16],
+    position: u32,
+}
+
+pub struct TranscriptOpeningPrice {
+    direction: u8,
+    data: [u8; 20],
+    blinders: [u8; 16],
+    position: u32,
+}
+
+pub struct TranscriptOpeningSymbol {
+    direction: u8,
+    data: [u8; 14],
     blinders: [u8; 16],
     position: u32,
 }
