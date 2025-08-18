@@ -56,7 +56,7 @@ pub struct TranscriptOpeningAmount {
 
 pub struct TranscriptOpeningUserName {
     direction: u8,
-    data: [u8; 23],
+    data: [u8; 27],
     blinder: [u8; 16],
     position: u32,
 }

@@ -13,10 +13,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create regex patterns for each struct (currency stays fixed at 16)
     let amount_regex = Regex::new(
-        r"pub struct TranscriptOpeningAmount \{\s*direction: u8,\s*data: \[u8; (\d+)\],\s*blinders: \[u8; 16\],\s*position: u32,\s*\}",
+        r"pub struct TranscriptOpeningAmount \{\s*direction: u8,\s*data: \[u8; (\d+)\],\s*blinder: \[u8; 16\],\s*position: u32,\s*\}",
     )?;
     let username_regex = Regex::new(
-        r"pub struct TranscriptOpeningUserName \{\s*direction: u8,\s*data: \[u8; (\d+)\],\s*blinders: \[u8; 16\],\s*position: u32,\s*\}",
+        r"pub struct TranscriptOpeningUserName \{\s*direction: u8,\s*data: \[u8; (\d+)\],\s*blinder: \[u8; 16\],\s*position: u32,\s*\}",
     )?;
 
     // Generate circuits for each combination (currency fixed at 16)
@@ -29,12 +29,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             // Replace Amount struct
             modified_content = amount_regex.replace(&modified_content, 
-                format!("pub struct TranscriptOpeningAmount {{\n    direction: u8,\n    data: [u8; {}],\n    blinders: [u8; 16],\n    position: u32,\n}}", amount_size)
+                format!("pub struct TranscriptOpeningAmount {{\n    direction: u8,\n    data: [u8; {}],\n    blinder: [u8; 16],\n    position: u32,\n}}", amount_size)
             ).to_string();
 
             // Replace UserName struct
             modified_content = username_regex.replace(&modified_content,
-                format!("pub struct TranscriptOpeningUserName {{\n    direction: u8,\n    data: [u8; {}],\n    blinders: [u8; 16],\n    position: u32,\n}}", username_size)
+                format!("pub struct TranscriptOpeningUserName {{\n    direction: u8,\n    data: [u8; {}],\n    blinder: [u8; 16],\n    position: u32,\n}}", username_size)
             ).to_string();
 
             // Write main.nr file

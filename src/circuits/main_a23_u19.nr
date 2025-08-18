@@ -49,14 +49,14 @@ pub fn main(
 
 pub struct TranscriptOpeningAmount {
     direction: u8,
-    data: [u8; 11],
+    data: [u8; 23],
     blinder: [u8; 16],
     position: u32,
 }
 
 pub struct TranscriptOpeningUserName {
     direction: u8,
-    data: [u8; 23],
+    data: [u8; 19],
     blinder: [u8; 16],
     position: u32,
 }

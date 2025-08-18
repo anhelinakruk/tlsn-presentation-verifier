@@ -49,7 +49,7 @@ pub fn main(
 
 pub struct TranscriptOpeningAmount {
     direction: u8,
-    data: [u8; 11],
+    data: [u8; 24],
     blinder: [u8; 16],
     position: u32,
 }
