@@ -11,10 +11,10 @@ pub fn main(
     signature_data: SignatureData,
     header_verification: HeaderVerification,
     commitment_verification: CommitmentVerification,
-    transcript_currency: TranscriptOpeningCurrency,
-    transcript_comment: TranscriptOpeningComment,
-    transcript_amount: TranscriptOpeningAmount,
-    transcript_user_name: TranscriptOpeningUserName,
+    transcript_currency: pub TranscriptOpeningCurrency,
+    transcript_comment: pub TranscriptOpeningComment,
+    transcript_amount: pub TranscriptOpeningAmount,
+    transcript_user_name: pub TranscriptOpeningUserName,
     encoder_secret: EncoderSecret
 ) {
     let message_hash: [u8; 32] = sha256::sha256_var(signature_data.message, 54);
