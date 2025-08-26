@@ -1,6 +1,5 @@
 use super::hash::hash_pair;
 use chacha_encoder::chacha_encoder::{add_sixteen_elements, encode_data_generic_byte, EncoderSecret};
-use std::hash::blake3;
 
 pub fn compute_commitment_root(leaves: [[u8; 32]; 4]) -> [u8; 32] {
     // Level 1
@@ -34,6 +33,6 @@ pub fn encode_and_hash<let N: u32>(encoder_secret: EncoderSecret, data: [u8; N],
     let encoded_with_blinder = add_sixteen_elements
     (encoded_data, blinder);
 
-    let hash = blake3(encoded_with_blinder);
+    let hash = sha256::sha256_var(encoded_with_blinder, encoded_with_blinder.len() as u64);
     hash
 }
