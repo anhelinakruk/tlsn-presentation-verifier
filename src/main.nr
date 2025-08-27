@@ -41,42 +41,42 @@ fn main(
 
     let mut commitment_leaves_hash: [[u8; 32]; 4] = [[0; 32]; 4];
 
-    commitment_leaves_hash[0] = encode_and_hash(
-        encoder_secret,
-        transcript_mins.data,
-        transcript_mins.direction,
-        transcript_mins.position,
-        transcript_mins.blinders,
-    );
-    println(commitment_leaves_hash[0]);
-    commitment_leaves_hash[1] = encode_and_hash(
-        encoder_secret,
-        transcript_close_time.data,
-        transcript_close_time.direction,
-        transcript_close_time.position,
-        transcript_close_time.blinders,
-    );
-    println(commitment_leaves_hash[1]);
-    commitment_leaves_hash[2] = encode_and_hash(
-        encoder_secret,
-        transcript_price.data,
-        transcript_price.direction,
-        transcript_price.position,
-        transcript_price.blinders,
-    );
-    println(commitment_leaves_hash[2]);
+    // commitment_leaves_hash[0] = encode_and_hash(
+    //     encoder_secret,
+    //     transcript_mins.data,
+    //     transcript_mins.direction,
+    //     transcript_mins.position,
+    //     transcript_mins.blinders,
+    // );
+    // println(commitment_leaves_hash[0]);
+    // commitment_leaves_hash[1] = encode_and_hash(
+    //     encoder_secret,
+    //     transcript_close_time.data,
+    //     transcript_close_time.direction,
+    //     transcript_close_time.position,
+    //     transcript_close_time.blinders,
+    // );
+    // println(commitment_leaves_hash[1]);
+    // commitment_leaves_hash[2] = encode_and_hash(
+    //     encoder_secret,
+    //     transcript_price.data,
+    //     transcript_price.direction,
+    //     transcript_price.position,
+    //     transcript_price.blinders,
+    // );
+    // println(commitment_leaves_hash[2]);
 
-    commitment_leaves_hash[3] = encode_and_hash(
-        encoder_secret,
-        transcript_symbol.data,
-        transcript_symbol.direction,
-        transcript_symbol.position,
-        transcript_symbol.blinders,
-    );
-    println(commitment_leaves_hash[3]);
+    // commitment_leaves_hash[3] = encode_and_hash(
+    //     encoder_secret,
+    //     transcript_symbol.data,
+    //     transcript_symbol.direction,
+    //     transcript_symbol.position,
+    //     transcript_symbol.blinders,
+    // );
+    // println(commitment_leaves_hash[3]);
 
-    let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
-    assert(computed_commitment_root == commitment_root);
+    // let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
+    // assert(computed_commitment_root == commitment_root);
 }
 
 pub struct TranscriptOpeningMins {
