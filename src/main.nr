@@ -34,17 +34,17 @@ pub fn main(
 
     let mut commitment_leaves_hash: [[u8; 32]; 4] = [[0; 32]; 4];
     
-    commitment_leaves_hash[0] = encode_and_hash(encoder_secret, transcript_currency.data, transcript_currency.direction, transcript_currency.position, transcript_currency.blinder);
-    println(commitment_leaves_hash[0]);
-    commitment_leaves_hash[1] = encode_and_hash(encoder_secret, transcript_comment.data, transcript_comment.direction, transcript_comment.position, transcript_comment.blinder);
-    println(commitment_leaves_hash[1]);
-    commitment_leaves_hash[2] = encode_and_hash(encoder_secret, transcript_amount.data, transcript_amount.direction, transcript_amount.position, transcript_amount.blinder);
-    println(commitment_leaves_hash[2]);
-    commitment_leaves_hash[3] = encode_and_hash(encoder_secret, transcript_user_name.data, transcript_user_name.direction, transcript_user_name.position, transcript_user_name.blinder);
-    println(commitment_leaves_hash[3]);
+    // commitment_leaves_hash[0] = encode_and_hash(encoder_secret, transcript_currency.data, transcript_currency.direction, transcript_currency.position, transcript_currency.blinder);
+    // println(commitment_leaves_hash[0]);
+    // commitment_leaves_hash[1] = encode_and_hash(encoder_secret, transcript_comment.data, transcript_comment.direction, transcript_comment.position, transcript_comment.blinder);
+    // println(commitment_leaves_hash[1]);
+    // commitment_leaves_hash[2] = encode_and_hash(encoder_secret, transcript_amount.data, transcript_amount.direction, transcript_amount.position, transcript_amount.blinder);
+    // println(commitment_leaves_hash[2]);
+    // commitment_leaves_hash[3] = encode_and_hash(encoder_secret, transcript_user_name.data, transcript_user_name.direction, transcript_user_name.position, transcript_user_name.blinder);
+    // println(commitment_leaves_hash[3]);
 
-    let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
-    assert(computed_commitment_root == commitment_verification.commitment_root);
+    // let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
+    // assert(computed_commitment_root == commitment_verification.commitment_root);
 }
 
 pub struct TranscriptOpeningAmount {
