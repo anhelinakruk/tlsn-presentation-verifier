@@ -1,7 +1,7 @@
 use hash::hash_body_fields;
-use merkle::{encode_and_hash, compute_header_root, compute_commitment_root};
+use merkle::compute_header_root;
 use signature::verify_signature;
-use chacha_encoder::chacha_encoder::{EncoderSecret};
+use chacha_encoder::chacha_encoder::add_sixteen_elements;
 
 pub mod hash;
 pub mod merkle;
@@ -10,17 +10,14 @@ pub mod signature;
 pub fn main(
     signature_data: SignatureData,
     header_verification: HeaderVerification,
-    commitment_verification: CommitmentVerification,
-    transcript_currency: pub TranscriptOpeningCurrency,
-    transcript_comment: pub TranscriptOpeningComment,
-    transcript_amount: pub TranscriptOpeningAmount,
-    transcript_user_name: pub TranscriptOpeningUserName,
-    encoder_secret: EncoderSecret
+    transcript: TranscriptCommitment
 ) {
+    // Message Verification
     let message_hash: [u8; 32] = sha256::sha256_var(signature_data.message, 54);
     let signature_valid = verify_signature(signature_data.key, message_hash, signature_data.signature);
     assert(signature_valid);
 
+    // Header Verification
     let body_field_hashes = hash_body_fields(
         header_verification.verifying_key_data,
         header_verification.connection_info_data,
@@ -32,47 +29,15 @@ pub fn main(
     let computed_header_root = compute_header_root(body_field_hashes);
     assert(computed_header_root == header_verification.header_root);
 
-    let mut commitment_leaves_hash: [[u8; 32]; 4] = [[0; 32]; 4];
-    
-    commitment_leaves_hash[0] = encode_and_hash(encoder_secret, transcript_currency.data, transcript_currency.direction, transcript_currency.position, transcript_currency.blinder);
-    println(commitment_leaves_hash[0]);
-    commitment_leaves_hash[1] = encode_and_hash(encoder_secret, transcript_comment.data, transcript_comment.direction, transcript_comment.position, transcript_comment.blinder);
-    println(commitment_leaves_hash[1]);
-    commitment_leaves_hash[2] = encode_and_hash(encoder_secret, transcript_amount.data, transcript_amount.direction, transcript_amount.position, transcript_amount.blinder);
-    println(commitment_leaves_hash[2]);
-    commitment_leaves_hash[3] = encode_and_hash(encoder_secret, transcript_user_name.data, transcript_user_name.direction, transcript_user_name.position, transcript_user_name.blinder);
-    println(commitment_leaves_hash[3]);
-
-    let computed_commitment_root = compute_commitment_root(commitment_leaves_hash);
-    assert(computed_commitment_root == commitment_verification.commitment_root);
-}
-
-pub struct TranscriptOpeningAmount {
-    direction: u8,
-    data: [u8; 11],
-    blinder: [u8; 16],
-    position: u32,
-}
-
-pub struct TranscriptOpeningUserName {
-    direction: u8,
-    data: [u8; 23],
-    blinder: [u8; 16],
-    position: u32,
-}
-
-pub struct TranscriptOpeningComment {
-    direction: u8,
-    data: [u8; 23],
-    blinder: [u8; 16],
-    position: u32,  
-}
-
-pub struct TranscriptOpeningCurrency {
-    direction: u8,
-    data: [u8; 16],
-    blinder: [u8; 16],
-    position: u32,
+    // Transcript Commitment Verification
+    let transcript_with_blinder = add_sixteen_elements(transcript.data, transcript.blinder);
+    let hash = sha256::sha256_var(transcript_with_blinder, 1190);
+    print(hash);
+    let mut transcript_commitment_hash: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        transcript_commitment_hash[i] = header_verification.transcript_commitments_data[21 + i];
+    }
+    assert(hash == transcript_commitment_hash);
 }
 
 pub struct SignatureData {
@@ -87,10 +52,11 @@ pub struct HeaderVerification {
     connection_info_data: [u8; 17],
     server_ephemeral_key_data: [u8; 67],
     cert_commitment_data: [u8; 34],
-    transcript_commitments_data: [u8; 83],
+    transcript_commitments_data: [u8; 53],
 }
 
-pub struct CommitmentVerification {
-    commitment_root: [u8; 32],
+pub struct TranscriptCommitment {
+    data: [u8; 1174],
+    blinder: [u8; 16],
 }
 

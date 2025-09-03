@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::fs;
-use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let circuits_dir = "src/circuits";

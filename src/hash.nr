@@ -14,7 +14,7 @@ pub fn hash_body_fields(
     connection_info_data: [u8; 17],
     server_ephemeral_key_data: [u8; 67],
     cert_commitment_data: [u8; 34],
-    transcript_commitments_data: [u8; 83]
+    transcript_commitments_data: [u8; 53]
 ) -> [[u8; 32]; 5] {
     let mut body_field_hashes: [[u8; 32]; 5] = [[0; 32]; 5];
 
